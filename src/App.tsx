@@ -1,33 +1,28 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { Account, TransactionType } from './types.ts'
+import AccountsBar from './AccountsBar.tsx'
+import AccountDetails from './AccountDetails.tsx'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const accounts: Account[] = [
+    new Account('Spending'),
+    new Account('Savings')
+  ]
+
+  accounts[0].newTransaction(
+    'A&W',
+    TransactionType.Debit,
+    [ { category: 'Food', amount: 15},
+      { category: 'Julia', amount: 12 } ]
+  )
+
+  const [selectedAccount, setSelectedAccount] = useState(accounts[0].name);
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <AccountsBar accounts={accounts} showAccount={(name: string) => setSelectedAccount(name)} />
+      <AccountDetails account={accounts.find(({ name }) => name === selectedAccount)} />
     </>
   )
 }
