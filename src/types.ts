@@ -1,4 +1,4 @@
-const sumArray = (nums: number[]) => {
+export const sumArray = (nums: number[]) => {
   return nums.reduce((a, v) => a + v, 0)
 }
 

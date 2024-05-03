@@ -44,15 +44,11 @@ const App = () => {
 
   const [selectedIndex, setSelectedIndex]: [number, Function] = useState(0);
   const selectAccount = (selectName: string) => {
-    let index = -1
-    accounts.find(({ name }, i) => {
-      index = i
-      return name === selectName
+    accounts.map(({ name }, i) => {
+      if (name === selectName) {
+        setSelectedIndex(i)
+      }
     })
-
-    if (index !== -1) {
-      setSelectedIndex(index)
-    }
   }
 
   let payees: string[] = []

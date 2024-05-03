@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'react'
+import { createContext, useContext, useState } from 'react'
 import { Transaction, TransactionType } from "./types.ts"
 import DropdownContext from "./DropdownContext.tsx"
 
@@ -92,6 +92,7 @@ const TransactionMain = () => {
         </td>
         <td>
           <input
+            className="input-text"
             value={transaction.memo}
             onChange={
               e => update((transaction: Transaction) => {
@@ -189,6 +190,8 @@ const CategorySelector = ({ getAllocation } : {
   const transactionContext = useContext(TransactionContext)
   const dropdownContext = useContext(DropdownContext)
 
+  const [prevValue, setPrevValue] = useState(null)
+
   if (transactionContext && dropdownContext) {
     const { transaction, update } = transactionContext
 
@@ -198,11 +201,16 @@ const CategorySelector = ({ getAllocation } : {
           value={getAllocation(transaction).category}
           onChange={
             e => update((transaction: Transaction) => {
+              setPrevValue(getAllocation(transaction).category)
               getAllocation(transaction).category = e.target.value
               return transaction
             })
           }>
-          { getAllocation(transaction).category === "" && <option></option> }
+          { getAllocation(transaction).category === "" ?
+              <option></option> :
+              ( prevValue &&
+                !dropdownContext.categories.find(e => e === prevValue) &&
+                <option>{prevValue}</option> ) }
           { dropdownContext.categories.map(category => <option>{category}</option>) }
         </select>
         <button
