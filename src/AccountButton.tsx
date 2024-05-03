@@ -1,14 +1,14 @@
-import { MouseEventHandler, useMemo } from 'react'
-import { Account } from './types.ts'
+import { MouseEventHandler } from "react"
+import { Account } from "./types.ts"
 
-function AccountButton({ account, onClick }: {
+const AccountButton = ({ account, onClick }: {
   account: Account
   onClick: MouseEventHandler<HTMLButtonElement>
-}) {
-  const balance = useMemo(account.getBalance, [account.transactions]);
+}) => {
+  const balance = account.getBalance();
   return (
-    <div className='account-button'>
-      <button onClick={onClick}>{account.name + ': ' + (balance < 0 ? '-' : '')  + '$' + Math.abs(balance)}</button>
+    <div className="account-button">
+      <button onClick={onClick}>{account.name + ": " + (balance < 0 ? "-" : "")  + "$" + Math.abs(balance)}</button>
     </div>
   )
 }

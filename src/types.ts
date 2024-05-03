@@ -5,34 +5,44 @@ const sumArray = (nums: number[]) => {
 type Payee = string
 type Category = string
 
-type Allocation = {
+export type Allocation = {
   category: Category,
   amount: number
 }
 
 export enum TransactionType {
-  Credit,
-  Debit
+  Inflow,
+  Outflow
 }
 
 export class Transaction {
+  date: Date
   payee: Payee
   type: TransactionType
   allocations: Allocation[]
+  amount: number = 0
+  memo: string
+  cleared: boolean
 
   constructor(
-    payee: Payee,
-    type: TransactionType,
-    allocations: Allocation[]
+    date: Date = new Date(),
+    payee: Payee = "",
+    type: TransactionType = TransactionType.Outflow,
+    allocations: Allocation[] = [ { category: "", amount: 0 } ],
+    memo: string = "",
+    cleared: boolean = false
   ) {
+    this.date = date
     this.payee = payee
     this.type = type
     this.allocations = allocations
+    this.amount = this.allocationBalance()
+    this.memo = memo
+    this.cleared = cleared
   }
 
-  getAmount = () => {
-    const sum = sumArray(this.allocations.map(({ amount }) => amount))
-    return this.type == TransactionType.Credit ? sum : -sum
+  allocationBalance = () => {
+    return sumArray(this.allocations.map(({ amount }) => amount))
   }
 }
 
@@ -41,22 +51,27 @@ export class Account {
   transactions: Transaction[]
 
   constructor(
-    name: string = '',
-    transactions: Transaction[] = []
+    name: string = "",
   ) {
     this.name = name
-    this.transactions = transactions
+    this.transactions = []
   }
 
-  newTransaction = (payee: Payee, type: TransactionType, allocations: Allocation[]) => {
-    this.transactions.push(new Transaction(payee, type, allocations));
+  newTransaction = () => {
+    this.transactions = [
+      new Transaction(),
+      ...this.transactions
+    ]
   }
 
   addTransaction = (transaction: Transaction) => {
-    this.transactions.push(transaction);
+    this.transactions.push(transaction)
   }
 
   getBalance = (): number => {
-    return sumArray(this.transactions.map((transaction) => transaction.getAmount()))
+    return sumArray(
+      this.transactions.map((transaction) =>
+        transaction.type == TransactionType.Inflow ? transaction.amount : -transaction.amount
+    ))
   }
 }

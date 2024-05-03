@@ -1,12 +1,12 @@
-import { Account } from './types.ts'
-import AccountButton from './AccountButton.tsx'
+import { Account } from "./types.ts"
+import AccountButton from "./AccountButton.tsx"
 
-function AccountsBar({ accounts, showAccount }: {
+const AccountsBar = ({ accounts, showAccount }: {
   accounts: Account[]
   showAccount: Function
-}) {
+}) => {
   return (
-    <div className='accounts-bar'>
+    <div className="accounts-bar">
       {accounts.map(account => <AccountButton key={account.name} account={account} onClick={() => showAccount(account.name)}/>)}
     </div>
   )
