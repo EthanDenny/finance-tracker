@@ -1,5 +1,6 @@
 import { createContext, useContext, useState } from 'react'
 import { Transaction, TransactionType } from "./types.ts"
+import { moneyText } from './Helpers.tsx'
 import DropdownContext from "./DropdownContext.tsx"
 
 type TransactionContextObject = {
@@ -57,36 +58,33 @@ const TransactionMain = () => {
           />
         </td>
         <td>
-          <select
-            value={transaction.payee}
-            id="payees"
-            onChange={
-              e => update((transaction: Transaction) => {
-                transaction.payee = e.target.value
-                return transaction
-              })
-            }>
-            { transaction.payee === "" && <option></option> }
-            { dropdownContext.payees.map(payee => <option>{payee}</option>) }
-          </select>
-          <button
-            onClick={
-              () => {
-                const payee = prompt("Add Payee", transaction.payee)
-                if (payee) {
-                  update((transaction: Transaction) => {
-                    transaction.payee = payee
-                    return transaction
-                  })
-                }
-              }
-            }>+</button>
+          <FieldSelector
+            getField={
+              (transaction: Transaction) =>
+                transaction.payee
+            }
+            setField={
+              (transaction: Transaction, payee: string) =>
+                transaction.payee = payee
+            }
+            items={ dropdownContext.payees }
+            promptText="Add Payee"
+          />
         </td>
         <td>
           {
             transaction.allocations.length == 1 &&
-            <CategorySelector
-              getAllocation={(transaction: Transaction) => transaction.allocations[0]}
+            <FieldSelector
+              getField={
+                (transaction: Transaction) =>
+                  transaction.allocations[0].category
+              }
+              setField={
+                (transaction: Transaction, category: string) =>
+                  transaction.allocations[0].category = category
+              }
+              items={ dropdownContext.categories }
+              promptText="Add Payee"
             />
           }
         </td>
@@ -123,9 +121,7 @@ const TransactionMain = () => {
             transaction.allocations.length > 1 &&
             allocationDifference != 0 &&
             <div>
-              Allocation difference: {
-                (allocationDifference < 0 ? '-' : '+') + '$' + Math.abs(allocationDifference)
-              }
+              Allocation difference: { moneyText(allocationDifference, true) }
             </div>
           }
         </td>
@@ -160,9 +156,18 @@ const TransactionSplit = ({ getAllocation }: {
         <td></td>
         <td></td>
         <td>
-          <CategorySelector
-            getAllocation={getAllocation}
-          />
+          <FieldSelector
+              getField={
+                (transaction: Transaction) =>
+                  getAllocation(transaction).category
+              }
+              setField={
+                (transaction: Transaction, category: string) =>
+                  getAllocation(transaction).category = category
+              }
+              items={ dropdownContext.categories }
+              promptText="Add Category"
+            />
         </td>
         <td></td>
         <td></td>
@@ -184,44 +189,47 @@ const TransactionSplit = ({ getAllocation }: {
   }
 }
 
-const CategorySelector = ({ getAllocation } : {
-  getAllocation: Function
+const FieldSelector = ({ getField, setField, items, promptText }: {
+  getField: Function
+  setField: Function
+  items: string[]
+  promptText: string
 }) => {
   const transactionContext = useContext(TransactionContext)
-  const dropdownContext = useContext(DropdownContext)
 
-  const [prevValue, setPrevValue] = useState(null)
+  const [prevValue, setPrevValue] = useState("")
 
-  if (transactionContext && dropdownContext) {
+  if (transactionContext) {
     const { transaction, update } = transactionContext
 
     return (
       <>
         <select
-          value={getAllocation(transaction).category}
+          value={getField(transaction)}
           onChange={
             e => update((transaction: Transaction) => {
-              setPrevValue(getAllocation(transaction).category)
-              getAllocation(transaction).category = e.target.value
+              setPrevValue(getField(transaction))
+              setField(transaction, e.target.value)
               return transaction
             })
           }>
-          { getAllocation(transaction).category === "" ?
+          { getField(transaction) === "" ?
               <option></option> :
-              ( prevValue &&
-                !dropdownContext.categories.find(e => e === prevValue) &&
+              ( prevValue !== "" &&
+                !items.find(e => e === prevValue) &&
                 <option>{prevValue}</option> ) }
-          { dropdownContext.categories.map(category => <option>{category}</option>) }
+          { items.map(payee => <option>{payee}</option>) }
         </select>
         <button
-          onClick={
-            () => {
-              const category = prompt("Add Category", getAllocation(transaction).category)
-              if (category) {
+          onClick={ () => {
+              const item = prompt(promptText, getField(transaction))
+              if (item) {
                 update((transaction: Transaction) => {
-                  getAllocation(transaction).category = category
+                  setField(transaction, item)
                   return transaction
-                })}}}
+                })
+              }
+          } }
         >+</button>
       </>
     )
