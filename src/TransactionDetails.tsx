@@ -2,6 +2,7 @@ import { createContext, useContext, useState } from 'react'
 import { Transaction, TransactionType } from "./types.ts"
 import { moneyText } from './Helpers.tsx'
 import DropdownContext from "./DropdownContext.tsx"
+import { MoneyInput } from './Inputs.tsx'
 
 type TransactionContextObject = {
   transaction: Transaction
@@ -104,14 +105,13 @@ const TransactionMain = () => {
           <TypeSelector />
         </td>
         <td>
-          $
-          <input type="number"
-            value={transaction.amount}
+          <MoneyInput
+            value={ transaction.amount }
             onChange={
-              e => update((transaction: Transaction) => {
-                transaction.amount = Number(e.target.value)
+              (newAmount: number) => update((transaction: Transaction) => {
+                transaction.amount = newAmount
                 if (transaction.allocations.length == 1) {
-                  transaction.allocations[0].amount = transaction.amount
+                  transaction.allocations[0].amount = newAmount
                 }
                 return transaction
               })
@@ -172,12 +172,11 @@ const TransactionSplit = ({ getAllocation }: {
         <td></td>
         <td></td>
         <td>
-          $
-          <input type="number"
-            value={getAllocation(transaction).amount}
+          <MoneyInput
+            value={ getAllocation(transaction).amount }
             onChange={
-              e => update((transaction: Transaction) => {
-                getAllocation(transaction).amount = Number(e.target.value)
+              (newAmount: number) => update((transaction: Transaction) => {
+                getAllocation(transaction).amount = newAmount
                 return transaction
               })
             }
