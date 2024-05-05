@@ -1,6 +1,6 @@
 import { createContext, useContext, useState } from 'react'
-import { Transaction, TransactionType } from "./types.ts"
-import { moneyText } from './Helpers.tsx'
+import { Transaction, TransactionType } from "./Types.ts"
+import { moneyText, getAllocationBalance } from './Helpers.ts'
 import DropdownContext from "./DropdownContext.tsx"
 import { MoneyInput } from './Inputs.tsx'
 
@@ -29,6 +29,7 @@ const TransactionDetails = ({ transaction, update }: {
         transaction.allocations.length > 1 &&
         transaction.allocations.map((_, i) => 
           <TransactionSplit
+            key={i}
             getAllocation={(transaction: Transaction) => transaction.allocations[i]}
           />)
       }
@@ -42,7 +43,7 @@ const TransactionMain = () => {
 
   if (transactionContext && dropdownContext) {
     const { transaction, update } = transactionContext
-    const allocationDifference = transaction.amount - transaction.allocationBalance()
+    const allocationDifference = transaction.amount - getAllocationBalance(transaction)
   
     return (
       <tr className="transaction-main">
@@ -213,11 +214,11 @@ const FieldSelector = ({ getField, setField, items, promptText }: {
             })
           }>
           { getField(transaction) === "" ?
-              <option></option> :
+              <option key=""></option> :
               ( prevValue !== "" &&
                 !items.find(e => e === prevValue) &&
-                <option>{prevValue}</option> ) }
-          { items.map(payee => <option>{payee}</option>) }
+                <option key={prevValue}>{prevValue}</option> ) }
+          { items.map(payee => <option key={payee}>{payee}</option>) }
         </select>
         <button
           onClick={ () => {

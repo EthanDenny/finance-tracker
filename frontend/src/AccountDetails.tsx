@@ -1,4 +1,5 @@
-import { Account, Transaction } from "./types.ts"
+import { Account, Transaction } from "./Types.ts"
+import { insertNewTransaction } from "./Helpers.ts"
 import TransactionDetails from "./TransactionDetails.tsx"
 
 const AccountDetails = ({ account, updateAccount }: {
@@ -6,7 +7,7 @@ const AccountDetails = ({ account, updateAccount }: {
   updateAccount: Function
 }) => {
   const addTransaction = () => {
-    account.newTransaction()
+    insertNewTransaction(account)
     updateAccount(account)
   }
 

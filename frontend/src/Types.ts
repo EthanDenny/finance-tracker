@@ -1,6 +1,4 @@
-export const sumArray = (nums: number[]) => {
-  return nums.reduce((a, v) => a + v, 0)
-}
+import { getAllocationBalance } from "./Helpers.ts"
 
 type Payee = string
 type Category = string
@@ -36,13 +34,9 @@ export class Transaction {
     this.payee = payee
     this.type = type
     this.allocations = allocations
-    this.amount = this.allocationBalance()
+    this.amount = getAllocationBalance(this)
     this.memo = memo
     this.cleared = cleared
-  }
-
-  allocationBalance = () => {
-    return sumArray(this.allocations.map(({ amount }) => amount))
   }
 }
 
@@ -52,26 +46,9 @@ export class Account {
 
   constructor(
     name: string = "",
+    transactions: Transaction[] = []
   ) {
     this.name = name
-    this.transactions = []
-  }
-
-  newTransaction = () => {
-    this.transactions = [
-      new Transaction(),
-      ...this.transactions
-    ]
-  }
-
-  addTransaction = (transaction: Transaction) => {
-    this.transactions.push(transaction)
-  }
-
-  getBalance = (): number => {
-    return sumArray(
-      this.transactions.map((transaction) =>
-        transaction.type == TransactionType.Inflow ? transaction.amount : -transaction.amount
-    ))
+    this.transactions = transactions
   }
 }
