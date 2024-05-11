@@ -1,5 +1,5 @@
 :root {
-  --sidebar-width: 13%
+  --sidebar-width: 13%;
 }
 
 button {
@@ -15,7 +15,7 @@ button {
   height: 100%;
 
   background-color: lightblue;
-  
+
   display: flex;
   flex-direction: column;
 }
@@ -48,7 +48,8 @@ button {
   width: 100%;
 }
 
-.account-details td, th {
+.account-details td,
+th {
   border-top: 1px solid #dddddd;
   border-bottom: 1px solid #dddddd;
   text-align: left;
@@ -71,4 +72,9 @@ select {
   background-color: whitesmoke;
   padding: 4px;
   margin: 0px;
+}
+
+#add-account-btn {
+  margin: 15% 5% 0% 5%;
+  width: 80%;
 }

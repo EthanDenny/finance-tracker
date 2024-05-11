@@ -1,91 +1,92 @@
-import { useEffect, useState } from "react"
-import { Account, Transaction } from "./Types.ts"
-import DropdownContext from "./DropdownContext.tsx"
-import AccountsBar from "./AccountsBar.tsx"
-import AccountDetails from "./AccountDetails.tsx"
-import "./App.css"
+import { useState } from "react";
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQuery,
+} from "@tanstack/react-query";
+import { DataContext } from "./DataContext.ts";
+import {
+  accountsFromResponse,
+  transactionsFromResponse,
+  allocationsFromResponse,
+} from "./Helpers.ts";
+import AccountsBar from "./AccountsBar.tsx";
+import AccountDetails from "./AccountDetails.tsx";
+import "./App.css";
+
+const queryClient = new QueryClient();
 
 const App = () => {
-  const [accounts, updateAccounts]: [Account[], Function] = useState([])
-
-  useEffect(() => {
-    fetch("http://localhost:3000/accounts/")
-      .then(response => response.json())
-      .then(json => {
-        const accounts = json.map((account: Account) => {
-          account.transactions = account.transactions.map(
-            (transaction: Transaction) => {
-              transaction.date = new Date(transaction.date)
-              return transaction
-            }
-          )
-          return account
-        })
-        updateAccounts(accounts)
-      })
-      .catch(() => {
-        console.log("Failed to load accounts")
-      })
-  })
-
-  const updateAccount = (newAccount: Account) => {
-    const nextAccounts = accounts.map((account) => {
-      return account.name === newAccount.name ? newAccount : account
-    })
-    updateAccounts(nextAccounts)
-  }
-
-  const [selectedIndex, setSelectedIndex]: [number, Function] = useState(0);
-  const selectAccount = (selectName: string) => {
-    accounts.map(({ name }, i) => {
-      if (name === selectName) {
-        setSelectedIndex(i)
-      }
-    })
-  }
-
-  let payees: string[] = []
-  accounts.map(account => {
-    account.transactions.map(transaction => {
-      const payee = transaction.payee
-      if (payee !== "" && !payees.find(e => e === payee)) {
-        payees.push(payee)
-      }
-    })
-  })
-
-  let categories: string[] = []
-  accounts.map(account => {
-    account.transactions.map(transaction => {
-      transaction.allocations.map(allocation => {
-        const category = allocation.category
-        if (category !== "" && !categories.find(e => e === category)) {
-          categories.push(category)
-        }
-      })
-    })
-  })
-  
   return (
-    <>
-      {
-        accounts.length > 0 &&
-        <AccountsBar
-          accounts={accounts}
-          showAccount={selectAccount}
-        />
-      }
-      {
-        accounts[selectedIndex] &&
-        <DropdownContext.Provider value={{ payees: payees, categories: categories }}>
-          <AccountDetails
-          account={accounts[selectedIndex]}
-          updateAccount={updateAccount}
-        />
-        </DropdownContext.Provider>
-      }
-    </>
-  )
-}
+    <QueryClientProvider client={queryClient}>
+      <Main />
+    </QueryClientProvider>
+  );
+};
 
-export default App
+const Main = () => {
+  const [selectednumber, setSelectedId]: [number, Function] = useState(-1);
+
+  const accounts = useQuery({
+    queryKey: ["accounts"],
+    queryFn: () =>
+      fetch("/backend/accounts/")
+        .then((res) => res.json())
+        .then((json) => {
+          const accounts = accountsFromResponse(json);
+          if (selectednumber === -1 && accounts.length > 0) {
+            setSelectedId(accounts[0].id);
+          }
+          return accounts;
+        }),
+  });
+
+  const transactions = useQuery({
+    queryKey: ["transactions"],
+    queryFn: () =>
+      fetch("/backend/transactions/")
+        .then((res) => res.json())
+        .then((json) => transactionsFromResponse(json)),
+  });
+
+  const allocations = useQuery({
+    queryKey: ["allocations"],
+    queryFn: () =>
+      fetch("/backend/allocations/")
+        .then((res) => res.json())
+        .then((json) => allocationsFromResponse(json)),
+  });
+
+  if (accounts.isPending || transactions.isPending || allocations.isPending) {
+    return null;
+  }
+
+  const error = (query: any) => {
+    return "An error has occurred: " + query.error.message;
+  };
+
+  if (accounts.error) error(accounts);
+  if (transactions.error) error(transactions);
+  if (allocations.error) error(allocations);
+
+  return (
+    <DataContext.Provider
+      value={{
+        accounts: accounts.data,
+        transactions: transactions.data,
+        allocations: allocations.data,
+      }}
+    >
+      {accounts.data.length > 0 && (
+        <AccountsBar
+          key={accounts.data}
+          selectedId={selectednumber}
+          selectAccount={setSelectedId}
+        />
+      )}
+      {selectednumber !== -1 && <AccountDetails selectedId={selectednumber} />}
+    </DataContext.Provider>
+  );
+};
+
+export default App;
