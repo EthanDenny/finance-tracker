@@ -59,7 +59,7 @@ export const allocationsFromResponse = (response: any) => {
   );
 };
 
-export const useHesitant = <Type>(
+export const useHesitant = <Type,>(
   initialValue: Type
 ): [Type, Function, Function] => {
   const [prevValue, setPrevValue] = useState(initialValue);

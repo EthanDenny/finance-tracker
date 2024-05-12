@@ -9,7 +9,7 @@ import {
   accountsFromResponse,
   transactionsFromResponse,
   allocationsFromResponse,
-} from "./Helpers.ts";
+} from "./Helpers.tsx";
 import AccountsBar from "./AccountsBar.tsx";
 import AccountDetails from "./AccountDetails.tsx";
 import "./App.css";

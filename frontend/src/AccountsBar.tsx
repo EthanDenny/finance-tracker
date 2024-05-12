@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { getAccountBalance } from "./Helpers.ts";
+import { getAccountBalance } from "./Helpers.tsx";
 import { DataContext } from "./DataContext.ts";
 import AccountButton from "./AccountButton.tsx";
 

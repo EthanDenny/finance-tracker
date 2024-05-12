@@ -1,32 +1,55 @@
-import { useContext } from "react";
+import { createContext, MouseEventHandler, useContext } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import DataCell from "./DataCell.tsx";
 import { DataContext } from "./DataContext.ts";
-import { useHesitant } from "./Helpers.ts";
+import { useHesitant } from "./Helpers.tsx";
 import {
   Allocation,
   Transaction,
   TransactionType,
 } from "../../common/Types.ts";
 
-const TransactionDetails = ({ selectedId }: { selectedId: number }) => {
+const FocusedContext = createContext(false);
+
+const TransactionDetails = ({
+  selectedId,
+  focused,
+  focusTransaction,
+}: {
+  selectedId: number;
+  focused: boolean;
+  focusTransaction: Function;
+}) => {
   const { transactions, allocations } = useContext(DataContext);
   const selectedTransaction = transactions.find(({ id }) => id === selectedId);
   const selectedAllocations = allocations.filter(
     ({ transactionId }) => transactionId === selectedId
   );
 
+  const onClick = (e: any) => {
+    focusTransaction(selectedId);
+    e.stopPropagation();
+  };
+
   return (
     selectedTransaction && (
-      <>
-        <TransactionEntry
-          transaction={selectedTransaction}
-          allocations={selectedAllocations}
-        />
-        {selectedAllocations.length > 1 &&
-          selectedAllocations.map((allocation) => (
-            <AllocationEntry key={allocation.id} allocation={allocation} />
-          ))}
-      </>
+      <div className={focused ? "transaction-focused" : "transaction"}>
+        <FocusedContext.Provider value={focused}>
+          <TransactionEntry
+            transaction={selectedTransaction}
+            allocations={selectedAllocations}
+            onClick={onClick}
+          />
+          {selectedAllocations.length > 1 &&
+            selectedAllocations.map((allocation) => (
+              <AllocationEntry
+                key={allocation.id}
+                allocation={allocation}
+                onClick={onClick}
+              />
+            ))}
+        </FocusedContext.Provider>
+      </div>
     )
   );
 };
@@ -34,63 +57,55 @@ const TransactionDetails = ({ selectedId }: { selectedId: number }) => {
 const TransactionEntry = ({
   transaction,
   allocations,
+  onClick,
 }: {
   transaction: Transaction;
   allocations: Allocation[];
+  onClick: MouseEventHandler;
 }) => {
   return (
-    <tr className="transaction-entry">
-      <td>
-        <DateInput transaction={transaction} />
-      </td>
-      <td>
-        <PayeeInput transaction={transaction} />
-      </td>
-      <td>
-        {allocations.length === 1 && (
-          <CategoryInput allocation={allocations[0]} />
-        )}
-      </td>
-      <td>
-        <MemoInput transaction={transaction} />
-      </td>
-      <td>
-        <TypeSelector transaction={transaction} />
-      </td>
-      <td>
-        {allocations.length === 1 ? (
-          <AmountInput transaction={transaction} allocation={allocations[0]} />
-        ) : (
-          <AmountInput transaction={transaction} allocation={null} />
-        )}
-      </td>
-      <td>
-        <ClearedBox transaction={transaction} />
-      </td>
-    </tr>
+    <div className={"transaction-row"} onClick={onClick}>
+      <DateInput transaction={transaction} />
+      <PayeeInput transaction={transaction} />
+      {allocations.length === 1 ? (
+        <CategoryInput allocation={allocations[0]} />
+      ) : (
+        <div className={"account-data-cell"} />
+      )}
+      <MemoInput transaction={transaction} />
+      <TypeSelector transaction={transaction} />
+      {allocations.length === 1 ? (
+        <AmountInput transaction={transaction} allocation={allocations[0]} />
+      ) : (
+        <AmountInput transaction={transaction} allocation={null} />
+      )}
+      <ClearedBox transaction={transaction} />
+    </div>
   );
 };
 
-const AllocationEntry = ({ allocation }: { allocation: Allocation }) => {
+const AllocationEntry = ({
+  allocation,
+  onClick,
+}: {
+  allocation: Allocation;
+  onClick: MouseEventHandler;
+}) => {
   return (
-    <tr className="allocation-entry">
-      <td></td>
-      <td></td>
-      <td>
-        <CategoryInput allocation={allocation} />
-      </td>
-      <td></td>
-      <td></td>
-      <td>
-        <AmountInput transaction={null} allocation={allocation} />
-      </td>
-      <td></td>
-    </tr>
+    <div className={"allocation-row"} onClick={onClick}>
+      <DataCell />
+      <DataCell />
+      <CategoryInput allocation={allocation} />
+      <DataCell />
+      <DataCell />
+      <AmountInput transaction={null} allocation={allocation} />
+    </div>
   );
 };
 
 const DateInput = ({ transaction }: { transaction: Transaction }) => {
   const queryClient = useQueryClient();
+  const focused = useContext(FocusedContext);
 
   const [value, setValue, resetValue] = useHesitant(transaction.date);
   const { mutate } = useMutation({
@@ -107,14 +122,18 @@ const DateInput = ({ transaction }: { transaction: Transaction }) => {
   });
 
   return (
-    <input
-      type="date"
-      value={value}
-      onChange={(e) => {
-        setValue(e.target.value);
-        mutate({ date: e.target.value.slice(0, 10) });
-      }}
-    />
+    <DataCell>
+      <input
+        type="date"
+        value={value}
+        onChange={(e) => {
+          if (focused) {
+            setValue(e.target.value);
+            mutate({ date: e.target.value.slice(0, 10) });
+          }
+        }}
+      />
+    </DataCell>
   );
 };
 
@@ -140,14 +159,16 @@ const PayeeInput = ({ transaction }: { transaction: Transaction }) => {
   });
 
   return (
-    <input
-      className="input-text"
-      value={value}
-      onChange={(e) => {
-        setValue(e.target.value);
-        mutate({ payee: e.target.value });
-      }}
-    />
+    <DataCell>
+      <input
+        className="input-text"
+        value={value}
+        onChange={(e) => {
+          setValue(e.target.value);
+          mutate({ payee: e.target.value });
+        }}
+      />
+    </DataCell>
   );
 };
 
@@ -173,14 +194,16 @@ const CategoryInput = ({ allocation }: { allocation: Allocation }) => {
   });
 
   return (
-    <input
-      className="input-text"
-      value={value}
-      onChange={(e) => {
-        setValue(e.target.value);
-        mutate({ category: e.target.value });
-      }}
-    />
+    <DataCell>
+      <input
+        className="input-text"
+        value={value}
+        onChange={(e) => {
+          setValue(e.target.value);
+          mutate({ category: e.target.value });
+        }}
+      />
+    </DataCell>
   );
 };
 
@@ -206,14 +229,16 @@ const MemoInput = ({ transaction }: { transaction: Transaction }) => {
   });
 
   return (
-    <input
-      className="input-text"
-      value={value}
-      onChange={(e) => {
-        setValue(e.target.value);
-        mutate({ memo: e.target.value });
-      }}
-    />
+    <DataCell>
+      <input
+        className="input-text"
+        value={value}
+        onChange={(e) => {
+          setValue(e.target.value);
+          mutate({ memo: e.target.value });
+        }}
+      />
+    </DataCell>
   );
 };
 
@@ -243,21 +268,23 @@ const TypeSelector = ({ transaction }: { transaction: Transaction }) => {
   });
 
   return (
-    <select
-      value={value}
-      onChange={(e) => {
-        setValue(e.target.value);
-        mutate({
-          type:
-            e.target.value === "Outflow"
-              ? TransactionType.Outflow
-              : TransactionType.Inflow,
-        });
-      }}
-    >
-      <option>Outflow</option>
-      <option>Inflow</option>
-    </select>
+    <DataCell>
+      <select
+        value={value}
+        onChange={(e) => {
+          setValue(e.target.value);
+          mutate({
+            type:
+              e.target.value === "Outflow"
+                ? TransactionType.Outflow
+                : TransactionType.Inflow,
+          });
+        }}
+      >
+        <option>Outflow</option>
+        <option>Inflow</option>
+      </select>
+    </DataCell>
   );
 };
 
@@ -309,23 +336,25 @@ const AmountInput = ({
   }).mutate;
 
   return (
-    <input
-      type="number"
-      value={value}
-      onChange={(e) => {
-        setValue(Number(e.target.value));
-        if (transaction) {
-          mutateTransaction({
-            amount: Number(e.target.value),
-          });
-        }
-        if (allocation) {
-          mutateAllocation({
-            amount: Number(e.target.value),
-          });
-        }
-      }}
-    />
+    <DataCell>
+      <input
+        type="number"
+        value={value}
+        onChange={(e) => {
+          setValue(Number(e.target.value));
+          if (transaction) {
+            mutateTransaction({
+              amount: Number(e.target.value),
+            });
+          }
+          if (allocation) {
+            mutateAllocation({
+              amount: Number(e.target.value),
+            });
+          }
+        }}
+      />
+    </DataCell>
   );
 };
 
@@ -350,14 +379,16 @@ const ClearedBox = ({ transaction }: { transaction: Transaction }) => {
   });
 
   return (
-    <input
-      type="checkbox"
-      checked={value}
-      onChange={() => {
-        setValue(!value);
-        mutate({ cleared: !value });
-      }}
-    />
+    <DataCell>
+      <input
+        type="checkbox"
+        checked={value}
+        onChange={() => {
+          setValue(!value);
+          mutate({ cleared: !value });
+        }}
+      />
+    </DataCell>
   );
 };
 

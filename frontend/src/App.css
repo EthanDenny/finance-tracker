@@ -14,7 +14,7 @@ button {
   width: var(--sidebar-width);
   height: 100%;
 
-  background-color: lightblue;
+  background-color: #8888ff;
 
   display: flex;
   flex-direction: column;
@@ -36,6 +36,7 @@ button {
   position: absolute;
   left: var(--sidebar-width);
   width: calc(100% - var(--sidebar-width));
+  height: 100%;
 }
 
 .account-details button {
@@ -48,11 +49,20 @@ button {
   width: 100%;
 }
 
-.account-details td,
-th {
+.transaction,
+.transaction-focused {
   border-top: 1px solid #dddddd;
   border-bottom: 1px solid #dddddd;
   text-align: left;
+}
+
+.transaction-focused {
+  background-color: #ddddff;
+  border-color: #000000;
+}
+
+.transaction-row,
+.allocation-row {
   padding: 8px;
 }
 
@@ -77,4 +87,10 @@ select {
 #add-account-btn {
   margin: 15% 5% 0% 5%;
   width: 80%;
+}
+
+.account-data-cell {
+  display: inline-flex;
+  width: calc(100% / 7);
+  justify-content: center;
 }
