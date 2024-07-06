@@ -3,7 +3,7 @@ import { Input } from "@chakra-ui/react";
 
 const numerals = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
 
-const ValidMoneyValue = (value: string): boolean => {
+const IsValidMoneyValue = (value: string): boolean => {
   let decimalFound = false;
   let centsFound = 0;
 
@@ -13,11 +13,12 @@ const ValidMoneyValue = (value: string): boolean => {
     const decimal = char == ".";
 
     if (decimal) {
+      if (decimalFound) {
+        return false;
+      }
       decimalFound = true;
     } else if (decimalFound) {
-      if (decimal) {
-        return false;
-      } else if (numeral) {
+      if (numeral) {
         centsFound++;
         if (centsFound > 2) {
           return false;
@@ -33,7 +34,7 @@ const ValidMoneyValue = (value: string): boolean => {
   return true;
 };
 
-const CreateValidString = (value: string) => {
+const CreateStringRepr = (value: string) => {
   let decimalFound = false;
   let centsFound = 0;
 
@@ -67,33 +68,35 @@ const CreateValidString = (value: string) => {
 
 interface MoneyInputProps {
   placeholder: string;
-  amount: number;
-  setAmount: (amount: number) => void;
-  variant?: string;
+  amount: number | null;
+  setAmount: (amount: number | null) => void;
 }
-const MoneyInput = ({
-  placeholder,
-  amount,
-  setAmount,
-  variant,
-}: MoneyInputProps) => {
-  const [value, setValue] = useState(CreateValidString(String(amount)));
+const MoneyInput = ({ placeholder, amount, setAmount }: MoneyInputProps) => {
+  const [inputValue, setInputValue] = useState("");
   const [focused, setFocused] = useState(false);
+
+  const stringRepr = amount ? CreateStringRepr(String(amount)) : "";
 
   return (
     <Input
-      variant={variant || "filled"}
+      variant="filled"
       placeholder={placeholder}
-      value={amount ? (focused ? value : `$${value}`) : ""}
+      value={focused ? inputValue : `${amount ? "$" : ""}${stringRepr}`}
       onChange={(event) => {
-        if (ValidMoneyValue(event.target.value)) {
-          setValue(event.target.value);
+        if (IsValidMoneyValue(event.target.value)) {
+          setInputValue(event.target.value);
         }
       }}
-      onFocus={() => setFocused(true)}
+      onFocus={() => {
+        setInputValue(stringRepr);
+        setFocused(true);
+      }}
       onBlur={() => {
-        setValue(CreateValidString(value));
-        setAmount(Number(value));
+        if (inputValue == "" || inputValue == ".") {
+          setAmount(null);
+        } else {
+          setAmount(Number(inputValue));
+        }
         setFocused(false);
       }}
     />
