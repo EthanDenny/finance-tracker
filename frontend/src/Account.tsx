@@ -1,19 +1,15 @@
 import { Table, Thead, Tbody, Tr, Th, TableContainer } from "@chakra-ui/react";
 import Transaction from "./Transaction.tsx";
-import { TransactionData, TransactionCallbacks } from "./types.ts";
+import { TransactionData } from "../../common/types.ts";
+import { useTransactionCallbacks } from "./hooks.ts";
 
 interface AccountProps {
-  id: number;
   transactions: TransactionData[];
-  transactionCallbacks: TransactionCallbacks;
   showCleared: boolean;
-  setShowCleared: (showCleared: boolean) => void;
 }
-const Account = ({
-  transactions,
-  showCleared,
-  transactionCallbacks,
-}: AccountProps) => {
+const Account = ({ transactions, showCleared }: AccountProps) => {
+  const transactionCallbacks = useTransactionCallbacks();
+
   return (
     <>
       <TableContainer>
@@ -36,7 +32,7 @@ const Account = ({
                   key={data.id}
                   data={data}
                   updateData={(editData) =>
-                    transactionCallbacks.edit(data.id, editData)
+                    transactionCallbacks.update({ id: data.id, data: editData })
                   }
                   deleteSelf={() => transactionCallbacks.delete(data.id)}
                 />

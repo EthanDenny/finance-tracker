@@ -1,7 +1,11 @@
 import { Tr, Td, Input, IconButton, Checkbox } from "@chakra-ui/react";
 import { DeleteIcon } from "@chakra-ui/icons";
 import MoneyInput from "./MoneyInput.tsx";
-import { TransactionData, TransactionEdit, TransactionType } from "./types.ts";
+import {
+  TransactionData,
+  TransactionEdit,
+  TransactionType,
+} from "../../common/types.ts";
 
 interface TransactionProps {
   data: TransactionData;

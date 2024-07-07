@@ -1,94 +1,118 @@
-import { useState } from "react";
-import { useKeyGetter } from "./utils.ts";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import {
+  AccountData,
   TransactionData,
-  TransactionEdit,
   TransactionType,
-  TransactionCallbacks,
-} from "./types.ts";
+  TransactionEdit,
+} from "../../common/types.ts";
 
-const initialTransactions: TransactionData[] = [
-  {
-    id: 0,
-    accountId: 0,
-    category: "Groceries",
-    memo: "",
-    amount: 100,
-    type: TransactionType.Outflow,
-    cleared: false,
-  },
-  {
-    id: 1,
-    accountId: 0,
-    category: "Utilities",
-    memo: "Electricity",
-    amount: 400,
-    type: TransactionType.Outflow,
-    cleared: true,
-  },
-  {
-    id: 2,
-    accountId: 1,
-    category: "Payroll",
-    memo: "",
-    amount: 1200,
-    type: TransactionType.Inflow,
-    cleared: false,
-  },
-];
+export const useAccounts = (): {
+  isPending: boolean;
+  error: Error | null;
+  data: AccountData[];
+} => {
+  const { isPending, error, data } = useQuery({
+    queryKey: ["accounts"],
+    queryFn: () =>
+      fetch("http://localhost:3000/accounts").then((res) => res.json()),
+  });
 
-export const useTransactions = (): [
-  TransactionData[],
-  TransactionCallbacks
-] => {
-  const getNextId = useKeyGetter(
-    initialTransactions
-      .map(({ id }) => id)
-      .reduce((e1, e2) => (e1 > e2 ? e1 : e2))
-  );
-
-  const [transactions, setTransactions] = useState(initialTransactions);
-
-  const newTransaction = (accountId: number) => {
-    const data: TransactionData = {
-      id: getNextId(),
-      accountId: accountId,
-      category: "",
-      memo: "",
-      amount: null,
-      type: TransactionType.None,
-      cleared: false,
-    };
-    setTransactions([...transactions, data]);
+  return {
+    isPending,
+    error,
+    data:
+      data &&
+      data.map(({ ID, AccountName }: { ID: string; AccountName: string }) => {
+        return { id: ID, name: AccountName };
+      }),
   };
+};
 
-  const editTransaction = (id: number, editData: TransactionEdit) => {
-    let newTransactions = [];
-    for (let data of transactions) {
-      if (data.id == id) {
-        newTransactions.push({
-          ...data,
-          category:
-            editData.category != undefined ? editData.category : data.category,
-          memo: editData.memo != undefined ? editData.memo : data.memo,
-          amount: editData.amount != undefined ? editData.amount : data.amount,
-          type: editData.type != undefined ? editData.type : data.type,
-          cleared:
-            editData.cleared != undefined ? editData.cleared : data.cleared,
-        });
-      } else {
-        newTransactions.push(data);
-      }
-    }
-    setTransactions(newTransactions);
+interface TransactionQueryResult {
+  ID: number;
+  AccountID: number;
+  Category: string;
+  Memo: string;
+  Amount: number | null;
+  Type: number;
+  Cleared: boolean;
+}
+export const useTransactions = (): {
+  isPending: boolean;
+  error: Error | null;
+  data: TransactionData[];
+} => {
+  const { isPending, error, data } = useQuery({
+    queryKey: ["transactions"],
+    queryFn: () =>
+      fetch("http://localhost:3000/transactions").then((res) => res.json()),
+  });
+  return {
+    isPending,
+    error,
+    data:
+      data &&
+      data.map((result: TransactionQueryResult) => {
+        let type =
+          result.Type == 0
+            ? TransactionType.None
+            : result.Type == 1
+            ? TransactionType.Inflow
+            : TransactionType.Outflow;
+
+        return {
+          id: result.ID,
+          accountId: result.AccountID,
+          category: result.Category,
+          memo: result.Memo,
+          amount: result.Amount,
+          type,
+          cleared: result.Cleared,
+        };
+      }),
   };
+};
 
-  const deleteTransaction = (id: number) => {
-    setTransactions(transactions.filter((data) => data.id != id));
+export const useTransactionCallbacks = () => {
+  const queryClient = useQueryClient();
+
+  const post = (endpoint: string, data: Object) =>
+    fetch(endpoint, {
+      method: "POST",
+      headers: new Headers({ "Content-Type": "application/json" }),
+      body: JSON.stringify(data),
+    });
+
+  const createTransaction = useMutation({
+    mutationFn: (accountId: number) =>
+      post(`http://localhost:3000/create/transaction/`, { accountId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+    },
+  }).mutate;
+
+  const updateTransaction = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: TransactionEdit }) =>
+      post("http://localhost:3000/update/transaction/", {
+        id: id,
+        data: data,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+    },
+  }).mutate;
+
+  const deleteTransaction = useMutation({
+    mutationFn: (id: number) =>
+      post(`http://localhost:3000/delete/transaction/`, { id }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+    },
+  }).mutate;
+
+  return {
+    create: createTransaction,
+    update: updateTransaction,
+    delete: deleteTransaction,
   };
-
-  return [
-    transactions,
-    { new: newTransaction, edit: editTransaction, delete: deleteTransaction },
-  ];
 };
