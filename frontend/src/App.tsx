@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, ReactNode } from "react";
 import {
   Stack,
   Tabs,
@@ -22,8 +22,6 @@ const App = () => {
 
   const accounts = useAccounts();
   if (accounts.error) return "Error";
-
-  console.log(accounts);
 
   const balances = useBalances();
   if (balances.error) return "Error";
@@ -95,12 +93,11 @@ const App = () => {
   return (
     <Stack paddingX={12} gap={4}>
       <HStack paddingTop={6} gap={6}>
-        <Button size="sm" colorScheme="blue" onClick={() => newAccount()}>
-          <HStack>
-            <AddIcon />
-            <Text>New Account</Text>
-          </HStack>
-        </Button>
+        <IconTextButton
+          icon={<AddIcon />}
+          text="New Account"
+          onClick={() => newAccount()}
+        />
         <Checkbox
           colorScheme="blue"
           isChecked={showCleared}
@@ -121,26 +118,16 @@ const App = () => {
           ))}
         </TabList>
         <HStack paddingTop={4} gap={6}>
-          <Button
-            size="sm"
-            colorScheme="blue"
+          <IconTextButton
+            icon={<AddIcon />}
+            text="Add Transaction"
             onClick={() => accounts.data && newTransaction()}
-          >
-            <HStack>
-              <AddIcon />
-              <Text>Add Transaction</Text>
-            </HStack>
-          </Button>
-          <Button
-            size="sm"
-            colorScheme="blue"
+          />
+          <IconTextButton
+            icon={<DeleteIcon />}
+            text="Delete Account"
             onClick={() => deleteAccount(getCurrentID())}
-          >
-            <HStack>
-              <DeleteIcon />
-              <Text>Delete Account</Text>
-            </HStack>
-          </Button>
+          />
         </HStack>
         <TabPanels>
           {!accounts.isPending &&
@@ -152,6 +139,25 @@ const App = () => {
         </TabPanels>
       </Tabs>
     </Stack>
+  );
+};
+
+const IconTextButton = ({
+  icon,
+  text,
+  onClick,
+}: {
+  icon: ReactNode;
+  text: string;
+  onClick: () => void;
+}) => {
+  return (
+    <Button size="sm" colorScheme="blue" onClick={onClick}>
+      <HStack>
+        {icon}
+        <Text>{text}</Text>
+      </HStack>
+    </Button>
   );
 };
 

@@ -46,8 +46,6 @@ module.exports = {
   updateTransaction: async (id: number, data: TransactionEdit) => {
     let sql_query = "UPDATE Transactions SET";
 
-    console.log(data);
-
     if (data.date !== undefined) {
       sql_query += ` Date = "${data.date}",`;
     }
@@ -71,8 +69,6 @@ module.exports = {
     }
 
     sql_query = sql_query.slice(0, sql_query.length - 1) + ` WHERE Id = ${id}`;
-
-    console.log(sql_query);
 
     return await query(sql_query);
   },
