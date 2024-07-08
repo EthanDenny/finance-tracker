@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Center, Tr, Td, Input, IconButton, Checkbox } from "@chakra-ui/react";
 import { DeleteIcon } from "@chakra-ui/icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -16,7 +16,7 @@ interface TransactionProps {
   showCleared: boolean;
 }
 const Transaction = ({ initialData, showCleared }: TransactionProps) => {
-  const queryClient = useQueryClient();
+  const [deleted, setDeleted] = useState(false);
 
   const id = initialData.id;
   const [requestData, key] = useTransaction(id);
@@ -27,6 +27,8 @@ const Transaction = ({ initialData, showCleared }: TransactionProps) => {
     [requestData]
   );
 
+  const queryClient = useQueryClient();
+
   const updateData = useMutation({
     mutationFn: (data: TransactionEdit) =>
       post("http://localhost:3000/update/transaction/", {
@@ -35,6 +37,7 @@ const Transaction = ({ initialData, showCleared }: TransactionProps) => {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [key] });
+      queryClient.invalidateQueries({ queryKey: ["balances"] });
     },
   }).mutate;
 
@@ -42,6 +45,8 @@ const Transaction = ({ initialData, showCleared }: TransactionProps) => {
     mutationFn: () => post(`http://localhost:3000/delete/transaction/`, { id }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [key] });
+      queryClient.invalidateQueries({ queryKey: ["balances"] });
+      setDeleted(true);
     },
   }).mutate;
 
@@ -57,6 +62,7 @@ const Transaction = ({ initialData, showCleared }: TransactionProps) => {
     data.type == type ? data.amount : null;
 
   return (
+    !deleted &&
     (showCleared || !data.cleared) && (
       <Tr>
         <Td>

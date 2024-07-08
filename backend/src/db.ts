@@ -19,6 +19,11 @@ module.exports = {
   getAccounts: async () => {
     return await query("SELECT * FROM Accounts");
   },
+  getBalances: async () => {
+    return await query(
+      `SELECT AccountID, SUM(CASE WHEN Type = 1 THEN Amount WHEN Type = 2 THEN -Amount ELSE 0 END) AS Balance FROM Transactions GROUP BY AccountID;`
+    );
+  },
   getAccountTransactions: async (accountId: number) => {
     return await query(
       `SELECT * FROM Transactions WHERE AccountID = ${accountId}`

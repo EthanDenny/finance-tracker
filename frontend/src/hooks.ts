@@ -3,11 +3,7 @@ import { AccountData, TransactionData } from "../../common/types.ts";
 import { HookReturn } from "./types.ts";
 import { post, convertTransactionResultToData } from "./utils.ts";
 
-export const useAccounts = (): {
-  isPending: boolean;
-  error: Error | null;
-  data: AccountData[];
-} => {
+export const useAccounts = (): HookReturn<AccountData[]> => {
   const { isPending, error, data } = useQuery({
     queryKey: ["accounts"],
     queryFn: () =>
@@ -19,9 +15,32 @@ export const useAccounts = (): {
     error,
     data:
       data &&
-      data.map(({ ID, AccountName }: { ID: string; AccountName: string }) => {
+      data.map(({ ID, AccountName }: { ID: number; AccountName: string }) => {
         return { id: ID, name: AccountName };
       }),
+  };
+};
+
+export const useBalances = (): HookReturn<Map<number, number>> => {
+  const { isPending, error, data } = useQuery({
+    queryKey: ["balances"],
+    queryFn: () =>
+      fetch("http://localhost:3000/balances").then((res) => res.json()),
+  });
+
+  return {
+    isPending,
+    error,
+    data:
+      data &&
+      new Map(
+        data.map(
+          ({ AccountID, Balance }: { AccountID: number; Balance: number }) => [
+            AccountID,
+            Balance,
+          ]
+        )
+      ),
   };
 };
 

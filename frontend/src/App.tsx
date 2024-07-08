@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import {
   Stack,
   Tabs,
@@ -14,7 +14,7 @@ import {
 import { AddIcon } from "@chakra-ui/icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Account from "./Account.tsx";
-import { useAccounts, accountQueryKey } from "./hooks.ts";
+import { useAccounts, useBalances, accountQueryKey } from "./hooks.ts";
 import { post } from "./utils.ts";
 
 const App = () => {
@@ -22,6 +22,31 @@ const App = () => {
 
   const accounts = useAccounts();
   if (accounts.error) return "Error";
+
+  const balances = useBalances();
+  if (balances.error) return "Error";
+
+  const tabHeadings = useMemo(() => {
+    if (accounts.isPending) {
+      return [];
+    }
+
+    if (balances.isPending) {
+      return accounts.data.map(({ id, name }) => {
+        return { id, heading: name };
+      });
+    }
+
+    return accounts.data.map(({ id, name }) => {
+      const balance = balances.data.get(id);
+      return {
+        id,
+        heading: `${name}: ${
+          balance ? (balance < 0 ? "-" : "") : ""
+        }$${Math.abs(balance ?? 0).toFixed(2)}`,
+      };
+    });
+  }, [accounts, balances]);
 
   const currentIndex = useRef(0);
   const getCurrentID = () => accounts.data[currentIndex.current].id;
@@ -48,8 +73,9 @@ const App = () => {
         }}
       >
         <TabList>
-          {accounts.data &&
-            accounts.data.map((data) => <Tab key={data.id}>{data.name}</Tab>)}
+          {tabHeadings.map(({ id, heading }) => (
+            <Tab key={id}>{heading}</Tab>
+          ))}
         </TabList>
         <HStack paddingTop={4} gap={6}>
           <Button

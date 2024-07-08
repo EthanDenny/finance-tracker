@@ -11,19 +11,25 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
 app.get("/accounts", (req: any, res: any) => {
-  db.getAccounts().then((accounts: AccountData[]) => {
+  db.getAccounts().then((accounts: Object[]) => {
     res.json(accounts);
+  });
+});
+
+app.get("/balances", (req: any, res: any) => {
+  db.getBalances().then((balances: Object[]) => {
+    res.json(balances);
   });
 });
 
 app.post("/transactions/", (req: any, res: any) => {
   if (req.body.id) {
-    db.getTransaction(req.body.id).then((transaction: TransactionData) => {
+    db.getTransaction(req.body.id).then((transaction: Object) => {
       res.json(transaction);
     });
   } else if (req.body.accountId) {
     db.getAccountTransactions(req.body.accountId).then(
-      (transactions: TransactionData[]) => {
+      (transactions: Object[]) => {
         res.json(transactions);
       }
     );
