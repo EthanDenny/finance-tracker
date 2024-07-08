@@ -66,6 +66,23 @@ const Transaction = ({ initialData, showCleared }: TransactionProps) => {
     (showCleared || !data.cleared) && (
       <Tr>
         <Td>
+          <input
+            type="date"
+            value={data.date.slice(0, 10)}
+            onChange={(event) => updateData({ date: event.target.value })}
+          ></input>
+        </Td>
+        <Td>
+          <Center>
+            <Input
+              variant="outline"
+              placeholder="Payee"
+              defaultValue={data.payee}
+              onBlur={(event) => updateData({ payee: event.target.value })}
+            />
+          </Center>
+        </Td>
+        <Td>
           <Center>
             <Input
               variant="outline"

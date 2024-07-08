@@ -1,16 +1,19 @@
 CREATE TABLE Accounts (
-    ID int NOT NULL AUTO_INCREMENT,
-    Name varchar(255) NOT NULL,
+    ID INT NOT NULL AUTO_INCREMENT,
+    AccountName VARCHAR(255) NOT NULL,
     PRIMARY KEY (ID)
 );
 
 CREATE TABLE Transactions (
-    ID int NOT NULL AUTO_INCREMENT,
-    AccountID int NOT NULL,
-    Category varchar(255) NOT NULL,
-    Memo varchar(255) NOT NULL,
-    Amount int,
-    Type int NOT NULL,
-    Cleared boolean NOT NULL,
+    ID INT NOT NULL AUTO_INCREMENT,
+    AccountID INT NOT NULL,
+    CreationTime DATETIME NOT NULL,
+    Date DATE NOT NULL,
+    Payee VARCHAR(255) NOT NULL,
+    Category VARCHAR(255) NOT NULL,
+    Memo VARCHAR(255) NOT NULL,
+    Amount FLOAT,
+    Type INT NOT NULL,
+    Cleared BOOLEAN NOT NULL,
     PRIMARY KEY (ID)
 );

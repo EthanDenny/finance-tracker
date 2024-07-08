@@ -15,6 +15,8 @@ export interface TransactionCallbacks {
 export interface TransactionQueryResult {
   ID: number;
   AccountID: number;
+  Date: string;
+  Payee: string;
   Category: string;
   Memo: string;
   Amount: number | null;

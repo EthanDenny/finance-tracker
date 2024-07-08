@@ -12,6 +12,8 @@ export enum TransactionType {
 export interface TransactionData {
   id: number;
   accountId: number;
+  date: string;
+  payee: string;
   category: string;
   memo: string;
   amount: number | null;
@@ -20,6 +22,8 @@ export interface TransactionData {
 }
 
 export type TransactionEdit = {
+  date?: string;
+  payee?: string;
   category?: string;
   memo?: string;
   amount?: number | null;

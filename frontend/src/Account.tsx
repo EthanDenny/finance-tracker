@@ -10,7 +10,16 @@ import {
 import Transaction from "./Transaction.tsx";
 import { useAccountTransactions } from "./hooks.ts";
 
-const headings = ["Category", "Memo", "Inflow", "Outflow", "Cleared", "Delete"];
+const headings = [
+  "Date",
+  "Payee",
+  "Category",
+  "Memo",
+  "Inflow",
+  "Outflow",
+  "Cleared",
+  "Delete",
+];
 
 interface AccountProps {
   id: number;

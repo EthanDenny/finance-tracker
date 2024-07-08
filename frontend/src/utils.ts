@@ -21,6 +21,8 @@ export const convertTransactionResultToData = (
   return {
     id: result.ID,
     accountId: result.AccountID,
+    date: result.Date,
+    payee: result.Payee,
     category: result.Category,
     memo: result.Memo,
     amount: result.Amount,

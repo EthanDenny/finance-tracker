@@ -34,7 +34,8 @@ const IsValidMoneyValue = (value: string): boolean => {
   return true;
 };
 
-const CreateStringRepr = (value: string) => {
+const CreateStringRepr = (amount: number) => {
+  let value = String(amount.toFixed(2));
   let decimalFound = false;
   let centsFound = 0;
 
@@ -75,7 +76,7 @@ const MoneyInput = ({ placeholder, amount, setAmount }: MoneyInputProps) => {
   const [inputValue, setInputValue] = useState("");
   const [focused, setFocused] = useState(false);
 
-  const stringRepr = amount ? CreateStringRepr(String(amount)) : "";
+  const stringRepr = amount ? CreateStringRepr(amount) : "";
 
   return (
     <Input

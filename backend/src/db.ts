@@ -26,7 +26,7 @@ module.exports = {
   },
   getAccountTransactions: async (accountId: number) => {
     return await query(
-      `SELECT * FROM Transactions WHERE AccountID = ${accountId}`
+      `SELECT * FROM Transactions WHERE AccountID = ${accountId} ORDER BY CreationTime DESC`
     );
   },
   getTransaction: async (id: number) => {
@@ -34,13 +34,21 @@ module.exports = {
   },
   createTransaction: async (accountId: number) => {
     const { insertId } = await query(
-      `INSERT INTO Transactions (AccountId, Category, Memo, Amount, Type, Cleared) VALUES (${accountId}, "", "", NULL, 0, 0)`
+      `INSERT INTO Transactions (AccountId, CreationTime, Date, Payee, Category, Memo, Amount, Type, Cleared) VALUES (${accountId}, NOW(), CURDATE(), "", "", "", NULL, 0, 0)`
     );
     return insertId;
   },
   updateTransaction: async (id: number, data: TransactionEdit) => {
     let sql_query = "UPDATE Transactions SET";
 
+    console.log(data);
+
+    if (data.date !== undefined) {
+      sql_query += ` Date = "${data.date}",`;
+    }
+    if (data.payee !== undefined) {
+      sql_query += ` Payee = "${data.payee}",`;
+    }
     if (data.category !== undefined) {
       sql_query += ` Category = "${data.category}",`;
     }
