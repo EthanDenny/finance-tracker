@@ -16,19 +16,29 @@ app.get("/accounts", (req: any, res: any) => {
   });
 });
 
-app.get("/transactions/", (req: any, res: any) => {
-  db.getTransactions().then((transactions: TransactionData[]) => {
-    res.json(transactions);
-  });
+app.post("/transactions/", (req: any, res: any) => {
+  if (req.body.id) {
+    db.getTransaction(req.body.id).then((transaction: TransactionData) => {
+      res.json(transaction);
+    });
+  } else if (req.body.accountId) {
+    db.getAccountTransactions(req.body.accountId).then(
+      (transactions: TransactionData[]) => {
+        res.json(transactions);
+      }
+    );
+  } else {
+    res.json();
+  }
 });
 
 app.post("/create/transaction/", async (req: any, res: any) => {
+  console.log(req.body);
   db.createTransaction(req.body.accountId);
   res.json();
 });
 
 app.post("/update/transaction/", (req: any, res: any) => {
-  console.log(req.body);
   db.updateTransaction(req.body.id, req.body.data);
   res.json();
 });

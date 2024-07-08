@@ -19,14 +19,13 @@ module.exports = {
   getAccounts: async () => {
     return await query("SELECT * FROM Accounts");
   },
-  getTransactions: async () => {
-    return await query("SELECT * FROM Transactions");
-  },
-  createAccount: async (accountName: string) => {
-    const { insertId } = await query(
-      `INSERT INTO Accounts (AccountName) VALUES (${accountName})`
+  getAccountTransactions: async (accountId: number) => {
+    return await query(
+      `SELECT * FROM Transactions WHERE AccountID = ${accountId}`
     );
-    return insertId;
+  },
+  getTransaction: async (id: number) => {
+    return await query(`SELECT * FROM Transactions WHERE Id = ${id}`);
   },
   createTransaction: async (accountId: number) => {
     const { insertId } = await query(

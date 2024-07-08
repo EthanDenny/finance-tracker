@@ -1,18 +1,50 @@
-import { Tr, Td, Input, IconButton, Checkbox } from "@chakra-ui/react";
+import { useMemo } from "react";
+import { Center, Tr, Td, Input, IconButton, Checkbox } from "@chakra-ui/react";
 import { DeleteIcon } from "@chakra-ui/icons";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import MoneyInput from "./MoneyInput.tsx";
 import {
   TransactionData,
   TransactionEdit,
   TransactionType,
 } from "../../common/types.ts";
+import { useTransaction } from "./hooks.ts";
+import { post } from "./utils.ts";
 
 interface TransactionProps {
-  data: TransactionData;
-  updateData: (data: TransactionEdit) => void;
-  deleteSelf: () => void;
+  initialData: TransactionData;
+  showCleared: boolean;
 }
-const Transaction = ({ data, updateData, deleteSelf }: TransactionProps) => {
+const Transaction = ({ initialData, showCleared }: TransactionProps) => {
+  const queryClient = useQueryClient();
+
+  const id = initialData.id;
+  const [requestData, key] = useTransaction(id);
+  if (requestData.error) return "Error";
+
+  const data = useMemo(
+    () => (!requestData.isPending ? requestData.data : initialData),
+    [requestData]
+  );
+
+  const updateData = useMutation({
+    mutationFn: (data: TransactionEdit) =>
+      post("http://localhost:3000/update/transaction/", {
+        id,
+        data: data,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [key] });
+    },
+  }).mutate;
+
+  const deleteSelf = useMutation({
+    mutationFn: () => post(`http://localhost:3000/delete/transaction/`, { id }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [key] });
+    },
+  }).mutate;
+
   const updateAmount = (amount: number | null, type: TransactionType) => {
     if (amount) {
       updateData({ amount: amount, type: type });
@@ -25,53 +57,72 @@ const Transaction = ({ data, updateData, deleteSelf }: TransactionProps) => {
     data.type == type ? data.amount : null;
 
   return (
-    <Tr>
-      <Td>
-        <Input
-          variant="filled"
-          placeholder="Category"
-          value={data.category}
-          onChange={(event) => updateData({ category: event.target.value })}
-        />
-      </Td>
-      <Td>
-        <Input
-          variant="filled"
-          placeholder="Memo"
-          value={data.memo}
-          onChange={(event) => updateData({ memo: event.target.value })}
-        />
-      </Td>
-      <Td>
-        <MoneyInput
-          placeholder="Inflow"
-          amount={getAmount(TransactionType.Inflow)}
-          setAmount={(amount) => updateAmount(amount, TransactionType.Inflow)}
-        />
-      </Td>
-      <Td>
-        <MoneyInput
-          placeholder="Outflow"
-          amount={getAmount(TransactionType.Outflow)}
-          setAmount={(amount) => updateAmount(amount, TransactionType.Outflow)}
-        />
-      </Td>
-      <Td>
-        <Checkbox
-          colorScheme="blue"
-          borderColor="gray"
-          isChecked={data.cleared}
-          onChange={(event) => updateData({ cleared: event.target.checked })}
-        />
-      </Td>
-      <Td>
-        <IconButton
-          aria-label="Delete transaction"
-          icon={<DeleteIcon />}
-          onClick={deleteSelf}
-        />
-      </Td>
-    </Tr>
+    (showCleared || !data.cleared) && (
+      <Tr>
+        <Td>
+          <Center>
+            <Input
+              variant="outline"
+              placeholder="Category"
+              defaultValue={data.category}
+              onBlur={(event) => updateData({ category: event.target.value })}
+            />
+          </Center>
+        </Td>
+        <Td>
+          <Center>
+            <Input
+              variant="outline"
+              placeholder="Memo"
+              defaultValue={data.memo}
+              onBlur={(event) => updateData({ memo: event.target.value })}
+            />
+          </Center>
+        </Td>
+        <Td>
+          <Center>
+            <MoneyInput
+              placeholder="Inflow"
+              amount={getAmount(TransactionType.Inflow)}
+              setAmount={(amount) =>
+                updateAmount(amount, TransactionType.Inflow)
+              }
+            />
+          </Center>
+        </Td>
+        <Td>
+          <Center>
+            <MoneyInput
+              placeholder="Outflow"
+              amount={getAmount(TransactionType.Outflow)}
+              setAmount={(amount) =>
+                updateAmount(amount, TransactionType.Outflow)
+              }
+            />
+          </Center>
+        </Td>
+        <Td>
+          <Center>
+            <Checkbox
+              colorScheme="blue"
+              isChecked={data.cleared}
+              onChange={(event) =>
+                updateData({ cleared: event.target.checked })
+              }
+            />
+          </Center>
+        </Td>
+        <Td>
+          <Center>
+            <IconButton
+              aria-label="Delete transaction"
+              icon={<DeleteIcon />}
+              onClick={() => deleteSelf()}
+            />
+          </Center>
+        </Td>
+      </Tr>
+    )
   );
 };
 

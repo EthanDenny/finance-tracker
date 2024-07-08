@@ -79,7 +79,7 @@ const MoneyInput = ({ placeholder, amount, setAmount }: MoneyInputProps) => {
 
   return (
     <Input
-      variant="filled"
+      variant="outline"
       placeholder={placeholder}
       value={focused ? inputValue : `${amount ? "$" : ""}${stringRepr}`}
       onChange={(event) => {
