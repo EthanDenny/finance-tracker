@@ -31,7 +31,7 @@ const Transaction = ({ initialData, showCleared }: TransactionProps) => {
 
   const updateData = useMutation({
     mutationFn: (data: TransactionEdit) =>
-      post("http://localhost:3000/update/transaction/", {
+      post("http://localhost:3000/update/transaction", {
         id,
         data: data,
       }),
@@ -42,7 +42,7 @@ const Transaction = ({ initialData, showCleared }: TransactionProps) => {
   }).mutate;
 
   const deleteSelf = useMutation({
-    mutationFn: () => post(`http://localhost:3000/delete/transaction/`, { id }),
+    mutationFn: () => post(`http://localhost:3000/delete/transaction`, { id }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [key] });
       queryClient.invalidateQueries({ queryKey: ["balances"] });

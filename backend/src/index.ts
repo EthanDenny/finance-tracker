@@ -15,6 +15,14 @@ app.get("/accounts", (req: any, res: any) => {
     res.json(accounts);
   });
 });
+app.post("/create/account", async (req: any, res: any) => {
+  db.createAccount(req.body.name);
+  res.json();
+});
+app.post("/delete/account", async (req: any, res: any) => {
+  db.deleteAccount(req.body.id);
+  res.json();
+});
 
 app.get("/balances", (req: any, res: any) => {
   db.getBalances().then((balances: Object[]) => {
@@ -22,7 +30,7 @@ app.get("/balances", (req: any, res: any) => {
   });
 });
 
-app.post("/transactions/", (req: any, res: any) => {
+app.post("/transactions", (req: any, res: any) => {
   if (req.body.id) {
     db.getTransaction(req.body.id).then((transaction: Object) => {
       res.json(transaction);
@@ -38,18 +46,17 @@ app.post("/transactions/", (req: any, res: any) => {
   }
 });
 
-app.post("/create/transaction/", async (req: any, res: any) => {
-  console.log(req.body);
+app.post("/create/transaction", async (req: any, res: any) => {
   db.createTransaction(req.body.accountId);
   res.json();
 });
 
-app.post("/update/transaction/", (req: any, res: any) => {
+app.post("/update/transaction", (req: any, res: any) => {
   db.updateTransaction(req.body.id, req.body.data);
   res.json();
 });
 
-app.post("/delete/transaction/", async (req: any, res: any) => {
+app.post("/delete/transaction", async (req: any, res: any) => {
   db.deleteTransaction(req.body.id);
   res.json();
 });

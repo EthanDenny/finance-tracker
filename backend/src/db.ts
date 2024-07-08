@@ -29,14 +29,19 @@ module.exports = {
       `SELECT * FROM Transactions WHERE AccountID = ${accountId} ORDER BY CreationTime DESC`
     );
   },
+  createAccount: async (name: string) => {
+    return await query(`INSERT INTO Accounts (Name) VALUES ("${name}")`);
+  },
+  deleteAccount: async (id: number) => {
+    return await query(`DELETE FROM Accounts WHERE ID = ${id}`);
+  },
   getTransaction: async (id: number) => {
     return await query(`SELECT * FROM Transactions WHERE Id = ${id}`);
   },
   createTransaction: async (accountId: number) => {
-    const { insertId } = await query(
+    return await query(
       `INSERT INTO Transactions (AccountId, CreationTime, Date, Payee, Category, Memo, Amount, Type, Cleared) VALUES (${accountId}, NOW(), CURDATE(), "", "", "", NULL, 0, 0)`
     );
-    return insertId;
   },
   updateTransaction: async (id: number, data: TransactionEdit) => {
     let sql_query = "UPDATE Transactions SET";
@@ -69,9 +74,9 @@ module.exports = {
 
     console.log(sql_query);
 
-    await query(sql_query);
+    return await query(sql_query);
   },
   deleteTransaction: async (id: number) => {
-    await query(`DELETE FROM Transactions WHERE Id = ${id}`);
+    return await query(`DELETE FROM Transactions WHERE Id = ${id}`);
   },
 };

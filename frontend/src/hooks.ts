@@ -15,8 +15,8 @@ export const useAccounts = (): HookReturn<AccountData[]> => {
     error,
     data:
       data &&
-      data.map(({ ID, AccountName }: { ID: number; AccountName: string }) => {
-        return { id: ID, name: AccountName };
+      data.map(({ ID, Name }: { ID: number; Name: string }) => {
+        return { id: ID, name: Name };
       }),
   };
 };
