@@ -2,14 +2,11 @@ import { useMemo, useState } from "react";
 import { Center, Tr, Td, Input, IconButton, Checkbox } from "@chakra-ui/react";
 import { DeleteIcon } from "@chakra-ui/icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import MoneyInput from "./MoneyInput.tsx";
-import {
-  TransactionData,
-  TransactionEdit,
-  TransactionType,
-} from "../../common/types.ts";
+import { MoneyInput } from "./MoneyInput.tsx";
+import { TransactionEdit, TransactionType } from "../../common/types.ts";
+import { TransactionData } from "./types.ts";
 import { useTransaction } from "./hooks.ts";
-import { post } from "./utils.ts";
+import { post, backendAddress } from "./utils.ts";
 
 interface TransactionProps {
   initialData: TransactionData;
@@ -31,7 +28,7 @@ const Transaction = ({ initialData, showCleared }: TransactionProps) => {
 
   const updateData = useMutation({
     mutationFn: (data: TransactionEdit) =>
-      post("http://localhost:3000/update/transaction", {
+      post(`http://${backendAddress}/update/transaction`, {
         id,
         data: data,
       }),
@@ -42,7 +39,10 @@ const Transaction = ({ initialData, showCleared }: TransactionProps) => {
   }).mutate;
 
   const deleteSelf = useMutation({
-    mutationFn: () => post(`http://localhost:3000/delete/transaction`, { id }),
+    mutationFn: () =>
+      post(`http://${backendAddress}/delete/transaction`, {
+        id,
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [key] });
       queryClient.invalidateQueries({ queryKey: ["balances"] });
@@ -53,22 +53,22 @@ const Transaction = ({ initialData, showCleared }: TransactionProps) => {
   const updateAmount = (amount: number | null, type: TransactionType) => {
     if (amount) {
       updateData({ amount: amount, type: type });
-    } else if (data.type == type) {
+    } else if (data && data.type == type) {
       updateData({ amount: null, type: TransactionType.None });
     }
   };
 
   const getAmount = (type: TransactionType): number | null =>
-    data.type == type ? data.amount : null;
+    data && data.type == type ? data.amount : null;
 
   return (
     !deleted &&
-    (showCleared || !data.cleared) && (
+    (showCleared || (data && !data.cleared)) && (
       <Tr>
         <Td>
           <input
             type="date"
-            value={data.date.slice(0, 10)}
+            value={data ? data.date.slice(0, 10) : ""}
             onChange={(event) => updateData({ date: event.target.value })}
           ></input>
         </Td>
@@ -77,7 +77,7 @@ const Transaction = ({ initialData, showCleared }: TransactionProps) => {
             <Input
               variant="outline"
               placeholder="Payee"
-              defaultValue={data.payee}
+              defaultValue={data ? data.payee : ""}
               onBlur={(event) => updateData({ payee: event.target.value })}
             />
           </Center>
@@ -87,7 +87,7 @@ const Transaction = ({ initialData, showCleared }: TransactionProps) => {
             <Input
               variant="outline"
               placeholder="Category"
-              defaultValue={data.category}
+              defaultValue={data ? data.category : ""}
               onBlur={(event) => updateData({ category: event.target.value })}
             />
           </Center>
@@ -97,7 +97,7 @@ const Transaction = ({ initialData, showCleared }: TransactionProps) => {
             <Input
               variant="outline"
               placeholder="Memo"
-              defaultValue={data.memo}
+              defaultValue={data ? data.memo : ""}
               onBlur={(event) => updateData({ memo: event.target.value })}
             />
           </Center>
@@ -128,7 +128,7 @@ const Transaction = ({ initialData, showCleared }: TransactionProps) => {
           <Center>
             <Checkbox
               colorScheme="blue"
-              isChecked={data.cleared}
+              isChecked={data ? data.cleared : false}
               onChange={(event) =>
                 updateData({ cleared: event.target.checked })
               }

@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const db = require("./db");
-import { AccountData, TransactionData } from "../../common/types.ts";
+import { Request, Response } from "express";
 
 const app = express();
 const PORT = 3000;
@@ -10,34 +10,57 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
-app.get("/accounts", (req: any, res: any) => {
-  db.getAccounts().then((accounts: Object[]) => {
+interface AccountQueryResult {
+  ID: number;
+  Name: string;
+}
+app.get("/accounts", async (req: Request, res: Response) => {
+  db.getAccounts().then((accounts: AccountQueryResult[]) => {
     res.json(accounts);
   });
 });
-app.post("/create/account", async (req: any, res: any) => {
+
+app.post("/create/account", async (req: Request, res: Response) => {
   db.createAccount(req.body.name);
   res.json();
 });
-app.post("/delete/account", async (req: any, res: any) => {
+
+app.post("/delete/account", async (req: Request, res: Response) => {
   db.deleteAccount(req.body.id);
   res.json();
 });
 
-app.get("/balances", (req: any, res: any) => {
-  db.getBalances().then((balances: Object[]) => {
+interface BalanceQueryResult {
+  AccountID: number;
+  Balance: number;
+}
+app.get("/balances", async (req: Request, res: Response) => {
+  db.getBalances().then((balances: BalanceQueryResult[]) => {
     res.json(balances);
   });
 });
 
-app.post("/transactions", (req: any, res: any) => {
+interface TransactionQueryResult {
+  id: number;
+  accountId: number;
+  date: string;
+  payee: string;
+  category: string;
+  memo: string;
+  amount: number | null;
+  type: number;
+  cleared: boolean;
+}
+app.post("/transactions", async (req: Request, res: Response) => {
   if (req.body.id) {
-    db.getTransaction(req.body.id).then((transaction: Object) => {
-      res.json(transaction);
-    });
+    db.getTransaction(req.body.id).then(
+      (transaction: TransactionQueryResult) => {
+        res.json(transaction);
+      }
+    );
   } else if (req.body.accountId) {
     db.getAccountTransactions(req.body.accountId).then(
-      (transactions: Object[]) => {
+      (transactions: TransactionQueryResult[]) => {
         res.json(transactions);
       }
     );
@@ -46,17 +69,17 @@ app.post("/transactions", (req: any, res: any) => {
   }
 });
 
-app.post("/create/transaction", async (req: any, res: any) => {
+app.post("/create/transaction", async (req: Request, res: Response) => {
   db.createTransaction(req.body.accountId);
   res.json();
 });
 
-app.post("/update/transaction", (req: any, res: any) => {
+app.post("/update/transaction", async (req: Request, res: Response) => {
   db.updateTransaction(req.body.id, req.body.data);
   res.json();
 });
 
-app.post("/delete/transaction", async (req: any, res: any) => {
+app.post("/delete/transaction", async (req: Request, res: Response) => {
   db.deleteTransaction(req.body.id);
   res.json();
 });

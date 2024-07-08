@@ -1,5 +1,5 @@
-import { TransactionQueryResult } from "./types.ts";
 import { TransactionType } from "../../common/types.ts";
+import { TransactionData } from "./types.ts";
 
 export const post = (endpoint: string, data: Object) =>
   fetch(endpoint, {
@@ -8,9 +8,20 @@ export const post = (endpoint: string, data: Object) =>
     body: JSON.stringify(data),
   });
 
+export interface TransactionQueryResult {
+  ID: number;
+  AccountID: number;
+  Date: string;
+  Payee: string;
+  Category: string;
+  Memo: string;
+  Amount: number | null;
+  Type: number;
+  Cleared: boolean;
+}
 export const convertTransactionResultToData = (
   result: TransactionQueryResult
-) => {
+): TransactionData => {
   let type =
     result.Type == 0
       ? TransactionType.None
@@ -30,3 +41,7 @@ export const convertTransactionResultToData = (
     cleared: result.Cleared,
   };
 };
+
+export const backendAddress = import.meta.env.DEV
+  ? "localhost:3000"
+  : "www.notdeployedyet.com";

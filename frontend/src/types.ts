@@ -1,25 +1,18 @@
-import { TransactionEdit } from "../../common/types.ts";
+import { TransactionType } from "../../common/types.ts";
 
-export interface HookReturn<Data> {
-  isPending: boolean;
-  error: Error | null;
-  data: Data;
+export interface AccountData {
+  id: number;
+  name: string;
 }
 
-export interface TransactionCallbacks {
-  new: (accountId: number) => void;
-  edit: (id: number, editData: TransactionEdit) => void;
-  delete: (id: number) => void;
-}
-
-export interface TransactionQueryResult {
-  ID: number;
-  AccountID: number;
-  Date: string;
-  Payee: string;
-  Category: string;
-  Memo: string;
-  Amount: number | null;
-  Type: number;
-  Cleared: boolean;
+export interface TransactionData {
+  id: number;
+  accountId: number;
+  date: string;
+  payee: string;
+  category: string;
+  memo: string;
+  amount: number | null;
+  type: TransactionType;
+  cleared: boolean;
 }

@@ -25,7 +25,7 @@ interface AccountProps {
   id: number;
   showCleared: boolean;
 }
-const Account = ({ id, showCleared }: AccountProps) => {
+export const Account = ({ id, showCleared }: AccountProps) => {
   const transactions = useAccountTransactions(id);
   if (transactions.error) return "Error";
 
@@ -57,5 +57,3 @@ const Account = ({ id, showCleared }: AccountProps) => {
     </>
   );
 };
-
-export default Account;

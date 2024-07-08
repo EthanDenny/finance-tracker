@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Input } from "@chakra-ui/react";
 
 const numerals = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
 
-const IsValidMoneyValue = (value: string): boolean => {
+const isValidMoneyValue = (value: string): boolean => {
   let decimalFound = false;
   let centsFound = 0;
 
@@ -34,7 +34,7 @@ const IsValidMoneyValue = (value: string): boolean => {
   return true;
 };
 
-const CreateStringRepr = (amount: number) => {
+const createStringRepr = (amount: number) => {
   let value = String(amount.toFixed(2));
   let decimalFound = false;
   let centsFound = 0;
@@ -72,11 +72,18 @@ interface MoneyInputProps {
   amount: number | null;
   setAmount: (amount: number | null) => void;
 }
-const MoneyInput = ({ placeholder, amount, setAmount }: MoneyInputProps) => {
+export const MoneyInput = ({
+  placeholder,
+  amount,
+  setAmount,
+}: MoneyInputProps) => {
   const [inputValue, setInputValue] = useState("");
   const [focused, setFocused] = useState(false);
 
-  const stringRepr = amount ? CreateStringRepr(amount) : "";
+  const stringRepr = useMemo(
+    () => (amount ? createStringRepr(amount) : ""),
+    [amount]
+  );
 
   return (
     <Input
@@ -84,7 +91,7 @@ const MoneyInput = ({ placeholder, amount, setAmount }: MoneyInputProps) => {
       placeholder={placeholder}
       value={focused ? inputValue : `${amount ? "$" : ""}${stringRepr}`}
       onChange={(event) => {
-        if (IsValidMoneyValue(event.target.value)) {
+        if (isValidMoneyValue(event.target.value)) {
           setInputValue(event.target.value);
         }
       }}
@@ -103,5 +110,3 @@ const MoneyInput = ({ placeholder, amount, setAmount }: MoneyInputProps) => {
     />
   );
 };
-
-export default MoneyInput;

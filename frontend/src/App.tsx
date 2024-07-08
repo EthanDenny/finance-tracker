@@ -13,11 +13,11 @@ import {
 } from "@chakra-ui/react";
 import { AddIcon, DeleteIcon } from "@chakra-ui/icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import Account from "./Account.tsx";
+import { Account } from "./Account.tsx";
 import { useAccounts, useBalances, accountQueryKey } from "./hooks.ts";
-import { post } from "./utils.ts";
+import { post, backendAddress } from "./utils.ts";
 
-const App = () => {
+export const App = () => {
   const [showCleared, setShowCleared] = useState(true);
 
   const accounts = useAccounts();
@@ -49,13 +49,14 @@ const App = () => {
   }, [accounts, balances]);
 
   const currentIndex = useRef(0);
-  const getCurrentID = () => accounts.data[currentIndex.current].id;
+  const getCurrentID = () =>
+    accounts.data ? accounts.data[currentIndex.current].id : -1;
 
   const queryClient = useQueryClient();
 
   const newAccount = useMutation({
     mutationFn: () =>
-      post(`http://localhost:3000/create/account`, {
+      post(`http://${backendAddress}/create/account`, {
         name: prompt("Account Name"),
       }),
     onSuccess: () => {
@@ -70,7 +71,9 @@ const App = () => {
 
   const deleteAccount = useMutation({
     mutationFn: (accountId: number) =>
-      post(`http://localhost:3000/delete/account`, { id: accountId }),
+      post(`http://${backendAddress}/delete/account`, {
+        id: accountId,
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["accounts"],
@@ -80,7 +83,7 @@ const App = () => {
 
   const newTransaction = useMutation({
     mutationFn: () =>
-      post(`http://localhost:3000/create/transaction`, {
+      post(`http://${backendAddress}/create/transaction`, {
         accountId: getCurrentID(),
       }),
     onSuccess: () => {
@@ -160,5 +163,3 @@ const IconTextButton = ({
     </Button>
   );
 };
-
-export default App;
