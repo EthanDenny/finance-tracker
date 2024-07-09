@@ -16,7 +16,7 @@ const Transaction = ({ initialData, showCleared }: TransactionProps) => {
   const [deleted, setDeleted] = useState(false);
 
   const id = initialData.id;
-  const [requestData, key] = useTransaction(id);
+  const requestData = useTransaction(id);
   if (requestData.error) return "Error";
 
   const data = useMemo(
@@ -26,29 +26,29 @@ const Transaction = ({ initialData, showCleared }: TransactionProps) => {
 
   const queryClient = useQueryClient();
 
-  const updateData = useMutation({
+  const { mutate: updateData } = useMutation({
     mutationFn: (data: TransactionEdit) =>
       post(`http://${backendAddress}/update/transaction`, {
         id,
         data: data,
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [key] });
+      queryClient.invalidateQueries({ queryKey: ["transaction", id] });
       queryClient.invalidateQueries({ queryKey: ["balances"] });
     },
-  }).mutate;
+  });
 
-  const deleteSelf = useMutation({
+  const { mutate: deleteSelf } = useMutation({
     mutationFn: () =>
       post(`http://${backendAddress}/delete/transaction`, {
         id,
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [key] });
+      queryClient.invalidateQueries({ queryKey: ["transaction", id] });
       queryClient.invalidateQueries({ queryKey: ["balances"] });
       setDeleted(true);
     },
-  }).mutate;
+  });
 
   const updateAmount = (amount: number | null, type: TransactionType) => {
     if (amount) {

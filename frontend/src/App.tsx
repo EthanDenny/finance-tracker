@@ -14,7 +14,7 @@ import {
 import { AddIcon, DeleteIcon } from "@chakra-ui/icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Account } from "./Account.tsx";
-import { useAccounts, useBalances, accountQueryKey } from "./hooks.ts";
+import { useAccounts, useBalances } from "./hooks.ts";
 import { post, backendAddress } from "./utils.ts";
 
 export const App = () => {
@@ -54,7 +54,7 @@ export const App = () => {
 
   const queryClient = useQueryClient();
 
-  const newAccount = useMutation({
+  const { mutate: newAccount } = useMutation({
     mutationFn: () =>
       post(`http://${backendAddress}/create/account`, {
         name: prompt("Account Name"),
@@ -67,9 +67,9 @@ export const App = () => {
         queryKey: ["balances"],
       });
     },
-  }).mutate;
+  });
 
-  const deleteAccount = useMutation({
+  const { mutate: deleteAccount } = useMutation({
     mutationFn: (accountId: number) =>
       post(`http://${backendAddress}/delete/account`, {
         id: accountId,
@@ -79,19 +79,19 @@ export const App = () => {
         queryKey: ["accounts"],
       });
     },
-  }).mutate;
+  });
 
-  const newTransaction = useMutation({
+  const { mutate: newTransaction } = useMutation({
     mutationFn: () =>
       post(`http://${backendAddress}/create/transaction`, {
         accountId: getCurrentID(),
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [accountQueryKey(getCurrentID())],
+        queryKey: ["account_transactions", getCurrentID()],
       });
     },
-  }).mutate;
+  });
 
   return (
     <Stack paddingX={12} gap={4}>

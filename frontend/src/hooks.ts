@@ -33,14 +33,11 @@ export const useBalances = (): UseQueryResult<Map<number, number>> =>
       ),
   });
 
-export const accountQueryKey = (accountId: number) =>
-  `account_transactions_${accountId}`;
-
 export const useAccountTransactions = (
   accountId: number
 ): UseQueryResult<TransactionData[]> =>
   useQuery({
-    queryKey: [accountQueryKey(accountId)],
+    queryKey: ["account_transactions", accountId],
     queryFn: () =>
       post(`http://${backendAddress}/transactions`, {
         accountId,
@@ -50,19 +47,13 @@ export const useAccountTransactions = (
 
 export const useTransaction = (
   id: number
-): [UseQueryResult<TransactionData | null>, string] => {
-  const key = `transaction_${id}`;
-
-  return [
-    useQuery({
-      queryKey: [key],
-      queryFn: () =>
-        post(`http://${backendAddress}/transactions`, {
-          id,
-        }).then((res) => res.json()),
-      select: (data) =>
-        data.length == 1 ? convertTransactionResultToData(data[0]) : null,
-    }),
-    key,
-  ];
-};
+): UseQueryResult<TransactionData | null> =>
+  useQuery({
+    queryKey: ["transaction", id],
+    queryFn: () =>
+      post(`http://${backendAddress}/transactions`, {
+        id,
+      }).then((res) => res.json()),
+    select: (data) =>
+      data.length == 1 ? convertTransactionResultToData(data[0]) : null,
+  });
