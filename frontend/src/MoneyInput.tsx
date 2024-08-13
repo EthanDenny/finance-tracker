@@ -37,11 +37,13 @@ const isValidMoneyValue = (value: string): boolean => {
 interface MoneyInputProps {
   placeholder: string;
   amount: number | null;
+  setTransactionFocused: () => void;
   setAmount: (amount: number | null) => void;
 }
 export const MoneyInput = ({
   placeholder,
   amount,
+  setTransactionFocused,
   setAmount,
 }: MoneyInputProps) => {
   const [inputValue, setInputValue] = useState("");
@@ -64,6 +66,7 @@ export const MoneyInput = ({
       }}
       onFocus={() => {
         setInputValue(stringRepr);
+        setTransactionFocused();
         setFocused(true);
       }}
       onBlur={() => {

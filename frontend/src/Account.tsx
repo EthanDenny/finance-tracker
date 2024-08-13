@@ -23,9 +23,16 @@ const headings = [
 
 interface AccountProps {
   id: number;
+  focusedId: number | null;
+  setFocusedId: (id: number | null) => void;
   showCleared: boolean;
 }
-export const Account = ({ id, showCleared }: AccountProps) => {
+export const Account = ({
+  id,
+  focusedId,
+  setFocusedId,
+  showCleared,
+}: AccountProps) => {
   const transactions = useAccountTransactions(id);
   if (transactions.error) return "Error";
 
@@ -48,6 +55,9 @@ export const Account = ({ id, showCleared }: AccountProps) => {
               transactions.data.map((data) => (
                 <Transaction
                   key={data.id}
+                  focused={data.id == focusedId}
+                  setFocused={() => setFocusedId(data.id)}
+                  clearFocus={() => setFocusedId(null)}
                   initialData={data}
                   showCleared={showCleared}
                 />

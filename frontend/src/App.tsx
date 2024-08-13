@@ -23,6 +23,7 @@ import { IconTextButton } from "./IconTextButton.tsx";
 
 export const App = () => {
   const [showCleared, setShowCleared] = useState(true);
+  const [focusedId, setFocusedId] = useState<number | null>(null);
 
   const accounts = useAccounts();
   const balances = useBalances();
@@ -85,7 +86,12 @@ export const App = () => {
           {!accounts.isPending &&
             accounts.data.map((data) => (
               <TabPanel key={data.id}>
-                <Account id={data.id} showCleared={showCleared} />
+                <Account
+                  id={data.id}
+                  focusedId={focusedId}
+                  setFocusedId={setFocusedId}
+                  showCleared={showCleared}
+                />
               </TabPanel>
             ))}
         </TabPanels>
