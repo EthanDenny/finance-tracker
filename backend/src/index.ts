@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const db = require("./db");
 import { Request, Response } from "express";
+import { TransactionQueryResult } from "../../common/types.ts";
 
 const app = express();
 const PORT = 3000;
@@ -40,17 +41,6 @@ app.get("/balances", async (req: Request, res: Response) => {
   });
 });
 
-interface TransactionQueryResult {
-  id: number;
-  accountId: number;
-  date: string;
-  payee: string;
-  category: string;
-  memo: string;
-  amount: number | null;
-  type: number;
-  cleared: boolean;
-}
 app.post("/transactions", async (req: Request, res: Response) => {
   if (req.body.id) {
     db.getTransaction(req.body.id).then(

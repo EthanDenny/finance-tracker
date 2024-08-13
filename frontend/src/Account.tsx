@@ -44,6 +44,7 @@ export const Account = ({ id, showCleared }: AccountProps) => {
           </Thead>
           <Tbody>
             {!transactions.isPending &&
+              !transactions.isError &&
               transactions.data.map((data) => (
                 <Transaction
                   key={data.id}

@@ -4,7 +4,7 @@ export enum TransactionType {
   Outflow,
 }
 
-export type TransactionEdit = {
+export interface TransactionEdit {
   date?: string;
   payee?: string;
   category?: string;
@@ -12,4 +12,16 @@ export type TransactionEdit = {
   amount?: number | null;
   type?: TransactionType;
   cleared?: boolean;
-};
+}
+
+export interface TransactionQueryResult {
+  ID: number;
+  AccountID: number;
+  Date: string;
+  Payee: string;
+  Category: string;
+  Memo: string;
+  Amount: number | null;
+  Type: number;
+  Cleared: boolean;
+}

@@ -1,4 +1,4 @@
-import { TransactionType } from "../../common/types.ts";
+import { TransactionType, TransactionQueryResult } from "../../common/types.ts";
 import { TransactionData } from "./types.ts";
 
 export const post = (endpoint: string, data: Object) =>
@@ -8,17 +8,6 @@ export const post = (endpoint: string, data: Object) =>
     body: JSON.stringify(data),
   });
 
-export interface TransactionQueryResult {
-  ID: number;
-  AccountID: number;
-  Date: string;
-  Payee: string;
-  Category: string;
-  Memo: string;
-  Amount: number | null;
-  Type: number;
-  Cleared: boolean;
-}
 export const convertTransactionResultToData = (
   result: TransactionQueryResult
 ): TransactionData => {

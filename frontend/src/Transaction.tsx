@@ -1,12 +1,14 @@
 import { useMemo, useState } from "react";
 import { Center, Tr, Td, Input, IconButton, Checkbox } from "@chakra-ui/react";
 import { DeleteIcon } from "@chakra-ui/icons";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { MoneyInput } from "./MoneyInput.tsx";
-import { TransactionEdit, TransactionType } from "../../common/types.ts";
+import { TransactionType } from "../../common/types.ts";
 import { TransactionData } from "./types.ts";
-import { useTransaction } from "./hooks.ts";
-import { post, backendAddress } from "./utils.ts";
+import {
+  useTransaction,
+  useUpdateTransaction,
+  useDeleteTransaction,
+} from "./hooks.ts";
 
 interface TransactionProps {
   initialData: TransactionData;
@@ -24,37 +26,19 @@ const Transaction = ({ initialData, showCleared }: TransactionProps) => {
     [requestData]
   );
 
-  const queryClient = useQueryClient();
+  const updateTransaction = useUpdateTransaction(id);
+  const deleteTransaction = useDeleteTransaction(id);
 
-  const { mutate: updateData } = useMutation({
-    mutationFn: (data: TransactionEdit) =>
-      post(`http://${backendAddress}/update/transaction`, {
-        id,
-        data: data,
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["transaction", id] });
-      queryClient.invalidateQueries({ queryKey: ["balances"] });
-    },
-  });
-
-  const { mutate: deleteSelf } = useMutation({
-    mutationFn: () =>
-      post(`http://${backendAddress}/delete/transaction`, {
-        id,
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["transaction", id] });
-      queryClient.invalidateQueries({ queryKey: ["balances"] });
-      setDeleted(true);
-    },
-  });
+  const deleteSelf = () => {
+    deleteTransaction();
+    setDeleted(true);
+  };
 
   const updateAmount = (amount: number | null, type: TransactionType) => {
     if (amount) {
-      updateData({ amount: amount, type: type });
+      updateTransaction({ amount: amount, type: type });
     } else if (data && data.type == type) {
-      updateData({ amount: null, type: TransactionType.None });
+      updateTransaction({ amount: null, type: TransactionType.None });
     }
   };
 
@@ -69,7 +53,9 @@ const Transaction = ({ initialData, showCleared }: TransactionProps) => {
           <input
             type="date"
             value={data ? data.date.slice(0, 10) : ""}
-            onChange={(event) => updateData({ date: event.target.value })}
+            onChange={(event) =>
+              updateTransaction({ date: event.target.value })
+            }
           ></input>
         </Td>
         <Td>
@@ -78,7 +64,9 @@ const Transaction = ({ initialData, showCleared }: TransactionProps) => {
               variant="outline"
               placeholder="Payee"
               defaultValue={data ? data.payee : ""}
-              onBlur={(event) => updateData({ payee: event.target.value })}
+              onBlur={(event) =>
+                updateTransaction({ payee: event.target.value })
+              }
             />
           </Center>
         </Td>
@@ -88,7 +76,9 @@ const Transaction = ({ initialData, showCleared }: TransactionProps) => {
               variant="outline"
               placeholder="Category"
               defaultValue={data ? data.category : ""}
-              onBlur={(event) => updateData({ category: event.target.value })}
+              onBlur={(event) =>
+                updateTransaction({ category: event.target.value })
+              }
             />
           </Center>
         </Td>
@@ -98,7 +88,9 @@ const Transaction = ({ initialData, showCleared }: TransactionProps) => {
               variant="outline"
               placeholder="Memo"
               defaultValue={data ? data.memo : ""}
-              onBlur={(event) => updateData({ memo: event.target.value })}
+              onBlur={(event) =>
+                updateTransaction({ memo: event.target.value })
+              }
             />
           </Center>
         </Td>
@@ -130,7 +122,7 @@ const Transaction = ({ initialData, showCleared }: TransactionProps) => {
               colorScheme="blue"
               isChecked={data ? data.cleared : false}
               onChange={(event) =>
-                updateData({ cleared: event.target.checked })
+                updateTransaction({ cleared: event.target.checked })
               }
             />
           </Center>

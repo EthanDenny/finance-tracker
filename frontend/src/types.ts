@@ -16,3 +16,5 @@ export interface TransactionData {
   type: TransactionType;
   cleared: boolean;
 }
+
+export type Balances = Map<number, number>;

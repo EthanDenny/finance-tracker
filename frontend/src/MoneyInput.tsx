@@ -34,39 +34,6 @@ const isValidMoneyValue = (value: string): boolean => {
   return true;
 };
 
-const createStringRepr = (amount: number) => {
-  let value = String(amount.toFixed(2));
-  let decimalFound = false;
-  let centsFound = 0;
-
-  for (let i = 0; i < value.length; i++) {
-    const char = value.charAt(i);
-    const isNumeral = numerals.includes(char);
-
-    if (char == ".") {
-      decimalFound = true;
-    } else if (decimalFound && isNumeral) {
-      centsFound++;
-    }
-  }
-
-  value = value.replace(/^0+/, "");
-
-  if (value.charAt(0) == ".") {
-    value = "0" + value;
-  }
-
-  if (!decimalFound) {
-    value += ".";
-  }
-
-  for (let i = centsFound; i < 2; i++) {
-    value += "0";
-  }
-
-  return value;
-};
-
 interface MoneyInputProps {
   placeholder: string;
   amount: number | null;
@@ -81,7 +48,7 @@ export const MoneyInput = ({
   const [focused, setFocused] = useState(false);
 
   const stringRepr = useMemo(
-    () => (amount ? createStringRepr(amount) : ""),
+    () => (amount != null ? String(amount.toFixed(2)) : ""),
     [amount]
   );
 
@@ -89,7 +56,7 @@ export const MoneyInput = ({
     <Input
       variant="outline"
       placeholder={placeholder}
-      value={focused ? inputValue : `${amount ? "$" : ""}${stringRepr}`}
+      value={focused ? inputValue : (amount ? "$" : "") + stringRepr}
       onChange={(event) => {
         if (isValidMoneyValue(event.target.value)) {
           setInputValue(event.target.value);
@@ -100,11 +67,9 @@ export const MoneyInput = ({
         setFocused(true);
       }}
       onBlur={() => {
-        if (inputValue == "" || inputValue == ".") {
-          setAmount(null);
-        } else {
-          setAmount(Number(inputValue));
-        }
+        setAmount(
+          inputValue != "" && inputValue != "." ? Number(inputValue) : null
+        );
         setFocused(false);
       }}
     />
